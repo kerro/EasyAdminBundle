@@ -6,13 +6,14 @@ use ArrayObject;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Form\EventListener\EasyAdminTabSubscriber;
-use Symfony\Bridge\Doctrine\Form\DoctrineOrmTypeGuesser;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormRegistryInterface;
 
 /**
  * Custom form type that deals with some of the logic used to render the
@@ -22,11 +23,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class CrudFormType extends AbstractType
 {
-    private DoctrineOrmTypeGuesser $doctrineOrmTypeGuesser;
+    private FormTypeGuesserInterface $formTypeGuesser;
 
-    public function __construct(DoctrineOrmTypeGuesser $doctrineOrmTypeGuesser)
+    public function __construct(FormRegistryInterface $formRegistry)
     {
-        $this->doctrineOrmTypeGuesser = $doctrineOrmTypeGuesser;
+        $this->formTypeGuesser = $formRegistry->getTypeGuesser();
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -52,7 +53,7 @@ class CrudFormType extends AbstractType
             }
 
             if (null === $formFieldType = $fieldDto->getFormType()) {
-                $guessType = $this->doctrineOrmTypeGuesser->guessType($entityDto->getFqcn(), $fieldDto->getProperty());
+                $guessType = $this->formTypeGuesser->guessType($entityDto->getFqcn(), $fieldDto->getProperty());
                 $formFieldType = $guessType->getType();
                 $formFieldOptions = array_merge($guessType->getOptions(), $formFieldOptions);
             }
